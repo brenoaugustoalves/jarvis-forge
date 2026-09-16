@@ -1,0 +1,24 @@
+functions:
+  criar_usuario:
+    agents:
+      - agente_backend
+      - agente_testes_unitarios
+      - agente_security_review
+  autenticar_usuario:
+    agents:
+      - agente_backend
+      - agente_testes_integracao
+      - agente_security_review
+      - agente_pentest
+  processar_pagamento:
+    agents:
+      - agente_backend
+      - agente_testes_concorrencia
+      - agente_testes_carga
+      - agente_security_review
+  gerar_relatorio:
+    agents:
+      - agente_backend
+      - agente_testes_carga
+      - agente_testes_integracao
+      - agente_revisor_final

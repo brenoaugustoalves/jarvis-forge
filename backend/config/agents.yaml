@@ -1,0 +1,25 @@
+agents:
+  agente_requisitos:
+    category: planning
+  agente_system_design:
+    category: architecture
+  agente_clean_architecture:
+    category: architecture
+  agente_backend:
+    category: development
+  agente_frontend:
+    category: development
+  agente_testes_unitarios:
+    category: testing
+  agente_testes_integracao:
+    category: testing
+  agente_testes_carga:
+    category: testing
+  agente_testes_concorrencia:
+    category: testing
+  agente_security_review:
+    category: security
+  agente_pentest:
+    category: security
+  agente_revisor_final:
+    category: delivery
