@@ -1,74 +1,100 @@
 # Jarvis Forge
 
-Plataforma inicial de engenharia de software multiagente. Ela organiza agentes de IA por função, aplica práticas de Clean Code, Clean Architecture, SOLID e System Design, executa uma esteira de validação e prepara correções em fluxo seguro.
+> Uma plataforma visual para criar, orquestrar e auditar workflows de engenharia de software com agentes de IA.
 
-> Esta versão é um MVP executável. Os agentes possuem implementações demonstrativas, sem exigir uma chave de IA. O contrato de cada agente já está separado para conectar OpenAI, OpenRouter ou modelos locais.
+[![Status](https://img.shields.io/badge/status-MVP%20funcional-38bdf8)](https://github.com/brenoaugustoalves/jarvis-forge)
+[![Python](https://img.shields.io/badge/Python-FastAPI-009688)](https://fastapi.tiangolo.com/)
+[![Deploy](https://img.shields.io/badge/deploy-Railway-7c3aed)](https://railway.com/)
 
-## O que já existe
+## Sobre o projeto
 
-- Cadastro de projetos e funções do sistema.
-- Registro de agentes por especialidade.
-- Orquestração de planejamento, arquitetura, implementação, testes e segurança.
-- Execução de uma simulação de autorreparo com tentativas limitadas.
-- Relatório de testes unitários, integração, carga, concorrência e segurança.
-- Dashboard web simples.
-- Canvas visual para montar workflows arrastando e conectando agentes.
-- Inspetor visual para editar papel, prompt, ferramentas, escopo e autorreparo de cada agente.
-- Templates visuais de API segura, Clean Architecture e QA completo.
-- API FastAPI e documentação Swagger.
-- Docker Compose para subir a plataforma.
-- Persistência durável de projetos, versões de workflow, execuções e auditoria.
-- PostgreSQL no Docker Compose e SQLite zero-config para desenvolvimento local.
-- Execução de DAG por níveis paralelos, com validação de ciclos.
-- Agent Gateway compatível com OpenAI, OpenRouter e Ollama, com fallback demo.
-- Proteção opcional da API por `JARVIS_API_KEY` e bloqueio de pentest sem escopo autorizado.
+O Jarvis Forge propõe uma “fábrica de software” visual: em vez de executar uma única tarefa de IA em uma conversa, o usuário monta um workflow com agentes especializados e define como eles colaboram.
 
-### Persistência e migrations
+Cada agente pode representar uma etapa real do ciclo de desenvolvimento — requisitos, arquitetura, backend, frontend, testes, segurança e revisão. O Canvas transforma essa composição em um DAG (grafo acíclico direcionado), permitindo dependências claras e execução paralela de etapas independentes.
 
-O modo local usa `DATABASE_URL=sqlite:///./jarvis-forge.db`. Para subir a stack completa:
+O projeto explora, em uma aplicação funcional, os desafios de combinar IA, orquestração, persistência, segurança e observabilidade em engenharia de software.
 
-```bash
-docker compose up --build
+## O que ele propõe
+
+```text
+Canvas visual → Workflow Engine / DAG → Agent Gateway
+      → Redis + Worker → PostgreSQL + auditoria
+      → Revisão humana e aprovação
 ```
 
-O serviço usa PostgreSQL com volume persistente. A estrutura também possui migrations Alembic em `backend/alembic`; em um ambiente com SQLAlchemy instalado, execute `alembic upgrade head` dentro de `backend`.
+O objetivo não é substituir a decisão humana. É organizar o trabalho dos agentes, limitar permissões, registrar evidências e tornar cada execução reproduzível e auditável.
 
-Endpoints operacionais adicionados: `GET /api/projects/{project_id}/runs` para histórico de execuções e `GET /api/audit` para a trilha de auditoria.
+## Funcionalidades atuais
+
+### Canvas profissional
+
+- Adição, remoção e arraste individual de agentes.
+- Seleção e movimentação de múltiplos nós.
+- Zoom, pan, minimapa e ajuste automático do layout.
+- Conexões entre nós e execução baseada em DAG.
+- Detecção de ciclos no backend.
+- Undo/redo, copiar/colar e atalhos de teclado.
+- Busca de agentes e templates de workflows.
+- Inspetor para prompt, ferramentas, escopo e autorreparo.
+
+### Backend e execução
+
+- API FastAPI com documentação Swagger.
+- PostgreSQL na Railway e SQLite para desenvolvimento local.
+- Redis para fila de execuções.
+- Worker separado para processamento assíncrono.
+- Histórico de projetos, workflows, versões e runs.
+- Logs de auditoria.
+- Status `queued`, `running`, `awaiting_approval` e `failed`.
+- Fallback seguro para agentes demonstrativos.
 
 ### Modelos de IA
 
-Configure o gateway pelo ambiente. Sem `AI_API_KEY` (ou com `AI_PROVIDER=ollama` sem modelo), o sistema permanece em modo demo. Com um provedor configurado, os agentes usam o modelo e retornam automaticamente ao agente demo se houver timeout ou falha do provedor:
+O Agent Gateway possui adaptadores compatíveis com OpenAI, OpenRouter e Ollama. Quando um provedor está configurado, os agentes usam o modelo definido. Se houver falha ou limite de API, o sistema retorna ao modo demo para não quebrar o workflow.
 
-```env
-AI_PROVIDER=openrouter
-AI_MODEL=openai/gpt-4o-mini
-AI_API_KEY=...
+### Segurança por padrão
+
+- API key opcional para proteger endpoints.
+- Pentest bloqueado sem escopo autorizado.
+- Separação entre API pública e worker interno.
+- Segredos configurados por variáveis de ambiente.
+- Aprovação humana antes da etapa de entrega.
+
+## Demonstração
+
+Ambiente publicado na Railway:
+
+**https://jarvis-forge-production-bd8c.up.railway.app**
+
+Endpoints úteis:
+
+```text
+GET /health              GET /api/agents
+GET /api/providers       GET /api/projects
+GET /api/workflows       GET /api/runs/{run_id}
+GET /api/audit
 ```
 
-O endpoint `GET /api/providers` mostra o provedor ativo sem expor a chave.
+## Stack
 
-## Executar localmente
+| Camada | Tecnologia |
+| --- | --- |
+| API | Python, FastAPI, Pydantic |
+| Persistência | PostgreSQL, SQLite, Alembic |
+| Fila | Redis |
+| Worker | Python asyncio |
+| IA | OpenAI-compatible Gateway, OpenRouter, Ollama |
+| Interface | HTML, CSS e JavaScript no Canvas atual |
+| Infraestrutura | Docker, Docker Compose, Railway |
+| Qualidade | Pytest e validação de workflows |
 
-O inicializador é autorreparável para problemas do ambiente Python: ele cria `.venv`, instala ou atualiza as dependências declaradas e somente depois inicia a API.
-
-### Windows — recomendado
-
-Você pode abrir `start-windows.bat` com duplo clique ou executar:
-
-```powershell
-cd C:\caminho\jarvis-forge-final\jarvis-forge\backend
-python run.py
-```
-
-Também é possível executar diretamente `app/main.py`; o bootstrap tentará preparar o ambiente. Porém, `run.py` é o ponto de entrada preferido porque inicia o Uvicorn corretamente.
-
-### Python
+## Como executar localmente
 
 ```bash
 cd backend
 python -m venv .venv
 
-# Windows PowerShell
+# Windows
 .venv\Scripts\Activate.ps1
 
 # Linux/macOS
@@ -78,69 +104,62 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Abra http://127.0.0.1:8000 para acessar o dashboard e http://127.0.0.1:8000/docs para a API.
+Abra `http://127.0.0.1:8000` e a documentação em `http://127.0.0.1:8000/docs`.
 
-### Deploy no Railway
-
-O repositório já contém `railway.json` e usa `backend/Dockerfile`. No Railway:
-
-1. Crie um projeto e conecte este repositório.
-2. Crie um serviço PostgreSQL e copie a variável `DATABASE_URL` para o serviço da API.
-3. Gere um domínio público para a API.
-4. Configure `AI_PROVIDER`, `AI_MODEL`, `AI_API_KEY` e, em ambiente compartilhado, `JARVIS_API_KEY`.
-5. Faça o deploy. O healthcheck será `GET /health`.
-
-O Railway injeta a variável `PORT`; o Dockerfile já escuta essa porta automaticamente. O Railway recomenda usar bancos gerenciados em vez de imagens PostgreSQL/Redis dentro do Compose. Consulte a [documentação de configuração como código](https://docs.railway.com/config-as-code) e a [documentação de Dockerfiles](https://docs.railway.com/builds/dockerfiles).
-
-## Usar o Canvas
-
-No Canvas, use um template ou adicione agentes pela biblioteca lateral. Arraste os nós, clique em `Conectar nós` para criar o fluxo e selecione qualquer nó para editar seu papel. O workflow fica salvo localmente no navegador até você clicar em `Salvar workflow`; `Executar fluxo` envia a configuração para o orquestrador.
-
-Cada nó pode receber um prompt diferente. Isso permite montar uma esteira como:
-
-```text
-Requisitos → System Design → Backend → Testes → Segurança → Revisão
-```
-
-Os nós de segurança são marcados separadamente e devem usar somente escopos autorizados. Quando o workflow contém arestas, o backend converte-as em um DAG, executa agentes independentes em paralelo e rejeita ciclos; sem arestas, mantém o comportamento sequencial compatível.
-
-### Docker
+Para PostgreSQL e Redis locais:
 
 ```bash
 docker compose up --build
 ```
 
-## Fluxo de autorreparo
+Para executar o worker manualmente:
 
-1. O projeto envia um objetivo ou erro.
-2. O analisador identifica a função afetada.
-3. O roteador seleciona os agentes configurados para aquela função.
-4. Os agentes geram diagnóstico, proposta e testes.
-5. A esteira valida qualidade, segurança, carga e concorrência.
-6. Uma correção é preparada para branch isolada.
-7. O resultado fica aguardando aprovação antes de produção.
-
-## Configuração por função
-
-Edite `backend/config/functions.yaml`:
-
-```yaml
-functions:
-  processar_pagamento:
-    agents:
-      - agente_debug
-      - agente_backend
-      - agente_testes_concorrencia
-      - agente_security_review
+```bash
+cd backend
+python worker.py
 ```
 
-Os testes de penetração devem ser executados somente em aplicações próprias ou em ambientes para os quais exista autorização explícita. O próximo passo natural é conectar o `RepairEngine` a Git, Docker sandbox e um provedor de IA.
+## Configuração de IA
 
-## Próximos módulos
+Crie `.env` a partir de `.env.example`:
 
-- Persistência em PostgreSQL.
-- Redis/Celery para filas de execução.
-- Integração GitHub para branches e Pull Requests.
-- Execução real de Pytest, JUnit, k6, Locust, Semgrep, Trivy, Gitleaks e OWASP ZAP.
-- Autenticação, RBAC, auditoria e aprovação humana.
-- Adaptadores para Java/Spring Boot, Python/FastAPI e React/TypeScript.
+```env
+AI_PROVIDER=openai
+AI_MODEL=gpt-4.1-mini
+AI_API_KEY=sua-chave
+```
+
+Na Railway, configure as variáveis no serviço da API e no serviço `jarvis-forge-worker`. Nunca publique `.env` ou chaves no GitHub.
+
+## Deploy
+
+O repositório possui `Dockerfile` na raiz e `railway.json`. A arquitetura publicada possui:
+
+```text
+jarvis-forge         API pública
+jarvis-forge-worker  consumidor da fila Redis
+Postgres             banco persistente
+Redis                fila de execução
+```
+
+## Roadmap
+
+- Migrar o Canvas para React + TypeScript.
+- Adicionar WebSocket/SSE para progresso em tempo real.
+- Implementar retry, timeout e cancelamento por etapa.
+- Criar sandbox Docker com limites de CPU, memória e rede.
+- Executar Pytest, Semgrep, Bandit, Trivy e Gitleaks de forma isolada.
+- Adicionar autenticação completa, RBAC e organizações.
+- Integrar GitHub para branches, diffs e Pull Requests.
+- Implementar autorreparo real com patch, testes e aprovação humana.
+- Adicionar métricas com OpenTelemetry, Prometheus e Grafana.
+
+## Por que este projeto é relevante
+
+O Jarvis Forge funciona como um laboratório de arquitetura para sistemas multiagentes. Ele demonstra preocupações que vão além de uma interface de chat: composição de workflows, concorrência, persistência, filas, limites de segurança, fallback de provedores e rastreabilidade das decisões.
+
+O projeto continua em evolução, mas já oferece uma base executável para experimentar como agentes de IA podem colaborar dentro de um processo de engenharia controlado.
+
+## Licença
+
+Projeto experimental para fins de estudo e portfólio.
