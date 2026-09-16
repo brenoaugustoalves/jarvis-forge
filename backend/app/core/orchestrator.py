@@ -17,6 +17,7 @@ class InMemoryStore:
     def create_project(self, project): self.projects[project["id"]] = project; return project
     def save_workflow(self, workflow): self.workflows[workflow["id"]] = workflow; return workflow
     def save_run(self, run): self.runs[run["id"]] = run; return run
+    def update_run(self, run): self.runs[run["id"]] = run; return run
     def get_project(self, project_id): return self.projects.get(project_id)
     def get_run(self, run_id): return self.runs.get(run_id)
     def list_projects(self): return list(self.projects.values())
@@ -43,7 +44,7 @@ class Orchestrator:
         return self.store.create_project(project)
 
     async def execute(self, project: dict, payload: dict) -> dict:
-        run_id = str(uuid4())
+        run_id = payload.get("_run_id") or str(uuid4())
         function_name = payload.get("function_name")
         configured = self.functions.get(function_name or "", {})
         workflow_agents = payload.get("agent_names") or []
@@ -119,4 +120,4 @@ class Orchestrator:
             "created_at": utc_now(),
             "workflow": payload.get("workflow", {}),
         }
-        return self.store.save_run(run)
+        return self.store.update_run(run) if payload.get("_run_id") else self.store.save_run(run)

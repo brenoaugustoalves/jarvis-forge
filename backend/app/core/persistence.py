@@ -112,6 +112,13 @@ class PersistentStore:
             row = conn.execute("SELECT data FROM runs WHERE id=%s" if self.is_postgres else "SELECT data FROM runs WHERE id=?", (run_id,)).fetchone()
             return (row[0] if self.is_postgres else self._decode(row)) if row else None
 
+    def update_run(self, run: dict) -> dict:
+        with self._connect() as conn:
+            query = "UPDATE runs SET status=%s, data=%s WHERE id=%s" if self.is_postgres else "UPDATE runs SET status=?, data=? WHERE id=?"
+            conn.execute(query, (run["status"], json.dumps(run), run["id"]))
+        self.audit("run.updated", "run", run["id"], {"status": run["status"]})
+        return run
+
     def list_runs(self, project_id: str | None = None) -> list[dict]:
         with self._connect() as conn:
             query = "SELECT data FROM runs ORDER BY created_at DESC"

@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from app.agents.demo_agents import AGENTS
 from app.core.orchestrator import InMemoryStore, Orchestrator
 from app.core.persistence import PersistentStore
+from app.core.queue import RunQueue
 import os
 
 
@@ -39,6 +40,7 @@ async def optional_api_key(request: Request, call_next):
 
 store = PersistentStore()
 orchestrator = Orchestrator(store)
+run_queue = RunQueue()
 DASHBOARD = Path(__file__).resolve().parents[2] / "dashboard" / "index.html"
 
 
@@ -119,6 +121,13 @@ async def create_run(project_id: str, payload: RunInput):
     project = store.get_project(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    if run_queue.enabled:
+        from uuid import uuid4
+        run_id = str(uuid4())
+        queued = {"id": run_id, "project_id": project_id, "status": "queued", "goal": payload.goal, "created_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(), "next_action": "Aguardando worker Redis", "workflow": payload.workflow}
+        store.save_run(queued)
+        await run_queue.enqueue({"run_id": run_id, "project": project, "payload": payload.model_dump()})
+        return queued
     try:
         return await orchestrator.execute(project, payload.model_dump())
     except ValueError as exc:
