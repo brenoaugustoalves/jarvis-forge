@@ -1,5 +1,8 @@
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 # Permite executar também `python app/main.py` sem quebrar por falta de pacote.
 if __package__ in (None, ""):
