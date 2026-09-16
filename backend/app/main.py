@@ -44,7 +44,7 @@ async def optional_api_key(request: Request, call_next):
 store = PersistentStore()
 orchestrator = Orchestrator(store)
 run_queue = RunQueue()
-DASHBOARD = Path(__file__).resolve().parents[2] / "dashboard" / "index.html"
+DASHBOARD = Path(os.getenv("JARVIS_DASHBOARD", Path(__file__).resolve().parents[2] / "dashboard" / "index.html"))
 
 
 class ProjectInput(BaseModel):

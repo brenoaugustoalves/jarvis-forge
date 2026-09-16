@@ -1,0 +1,25 @@
+{
+  "name": "jarvis-forge-desktop",
+  "version": "0.2.0",
+  "description": "Jarvis Forge — plataforma visual de engenharia de software multiagente",
+  "main": "src/main.js",
+  "author": "Breno Augusto Alves",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.jarvisforge.desktop",
+    "productName": "Jarvis Forge",
+    "directories": { "output": "release" },
+    "files": ["src/**/*", "package.json"],
+    "extraResources": [{ "from": "../backend/dist/jarvis-backend", "to": "backend" }],
+    "win": { "target": [{ "target": "nsis", "arch": ["x64"] }], "icon": "build/icon.ico" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true }
+  }
+}

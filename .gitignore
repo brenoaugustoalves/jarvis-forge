@@ -4,4 +4,8 @@ backend/**/__pycache__/
 backend/.pytest_cache/
 *.pyc
 *.db
+desktop/node_modules/
+desktop/release/
+backend/build/
+backend/dist/
 .env

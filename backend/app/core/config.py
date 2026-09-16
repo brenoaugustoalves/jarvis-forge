@@ -1,9 +1,10 @@
 from pathlib import Path
+import os
 import yaml
 
 
-ROOT = Path(__file__).resolve().parents[2]
-CONFIG_DIR = ROOT / "config"
+ROOT = Path(os.getenv("JARVIS_ASSET_ROOT", Path(__file__).resolve().parents[2]))
+CONFIG_DIR = Path(os.getenv("JARVIS_CONFIG_DIR", ROOT / "config"))
 
 
 def load_yaml(filename: str) -> dict:
