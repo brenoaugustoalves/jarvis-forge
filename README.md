@@ -119,6 +119,24 @@ cd backend
 python worker.py
 ```
 
+## Executar usando o limite local do ChatGPT/Codex
+
+Quando o Codex CLI estiver instalado e autenticado no computador, use o runner local. Ele não usa `AI_API_KEY`, não envia a sessão para a Railway e mantém a execução dentro da cota da conta local do Codex.
+
+```powershell
+cd backend
+codex login status
+python local_runner.py "Analise a arquitetura deste projeto"
+```
+
+Para usar um workflow exportado do Canvas:
+
+```powershell
+python local_runner.py "Revise este projeto" --workflow workflow.json --workspace C:\caminho\do\projeto
+```
+
+O padrão é `read-only`; use `--writable` somente quando quiser permitir alterações e sempre revise o relatório `jarvis-local-run.json` antes de aplicar qualquer mudança. No Windows, também é possível executar `run-local-windows.bat`.
+
 ## Configuração de IA
 
 Crie `.env` a partir de `.env.example`:
