@@ -137,6 +137,17 @@ python local_runner.py "Revise este projeto" --workflow workflow.json --workspac
 
 O padrão é `read-only`; use `--writable` somente quando quiser permitir alterações e sempre revise o relatório `jarvis-local-run.json` antes de aplicar qualquer mudança. No Windows, também é possível executar `run-local-windows.bat`.
 
+### Autorreparo de código
+
+Para um erro real, o Repair Engine cria uma worktree isolada, pede ao Codex uma correção, executa `pytest` e gera um relatório. A branch principal não é alterada automaticamente:
+
+```powershell
+cd backend
+python repair.py "ImportError ao iniciar o módulo de pagamentos" --workspace C:\meu-projeto
+```
+
+Revise `jarvis-repair-report.json` e o diff antes de aplicar qualquer patch. O pipeline remove a worktree temporária ao terminar e nunca faz deploy sozinho.
+
 ## Configuração de IA
 
 Crie `.env` a partir de `.env.example`:
